@@ -10,10 +10,11 @@ export function useMovies() {
   const fetchMovies = useCallback(async () => {
     try {
       const { data } = await api.get('/movies');
-      setMovies(data);
+      setMovies(Array.isArray(data) ? data : []); // guard here
       setError(null);
     } catch {
       setError('Could not load movies. Is the backend running?');
+      setMovies([]); // make sure movies is always an array
     } finally {
       setLoading(false);
     }
