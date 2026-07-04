@@ -14,7 +14,7 @@ const PORT = process.env.PORT ?? 3001;
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'scope-ticket-monitor.up.railway.app', 
+    'https://scope-ticket-monitor.up.railway.app', 
   ]
 }));
 app.use(express.json());
