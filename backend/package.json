@@ -1,0 +1,25 @@
+{
+  "name": "scope-ticket-monitor-backend",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/app.js",
+    "start": "node src/app.js",
+    "db:migrate": "prisma migrate dev",
+    "db:studio": "prisma studio",
+    "test:scraper": "node src/scraper/test.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "cors": "^2.8.6",
+    "dotenv": "^16.6.1",
+    "express": "^4.22.2",
+    "node-cron": "^4.5.0",
+    "pino": "^8.21.0",
+    "pino-pretty": "^10.3.1",
+    "playwright": "^1.61.1"
+  },
+  "devDependencies": {
+    "prisma": "^5.22.0"
+  }
+}
