@@ -26,14 +26,14 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, async () => {
+app.listen(PORT, () => {
   logger.info(`Backend running on port ${PORT}`);
   startScheduler();
 
-  // Seed on startup
-  try {
-    await refreshMovies();
-  } catch (err) {
-    logger.error({ err }, 'Startup seed failed');
-  }
+  // Run scrape after a short delay, non-blocking
+  setTimeout(() => {
+    refreshMovies().catch((err) =>
+      logger.error({ err }, 'Startup seed failed')
+    );
+  }, 5000);
 });
