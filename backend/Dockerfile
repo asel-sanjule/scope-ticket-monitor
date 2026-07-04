@@ -4,14 +4,13 @@ WORKDIR /app
 
 COPY package*.json ./
 RUN npm ci
+RUN npx playwright install chromium --with-deps
 
 COPY prisma ./prisma
-
-# Generate Prisma client without needing DATABASE_URL at build time
 RUN PRISMA_SKIP_POSTINSTALL_GENERATE=true npx prisma generate
 
 COPY src ./src
 
 EXPOSE 3001
 
-CMD ["sh", "-c", "npx prisma migrate deploy && node src/app.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && echo 'Starting node...' && node src/app.js 2>&1"]
