@@ -6,10 +6,12 @@ COPY package*.json ./
 RUN npm ci
 
 COPY prisma ./prisma
-RUN npx prisma generate
+
+# Generate Prisma client without needing DATABASE_URL at build time
+RUN PRISMA_SKIP_POSTINSTALL_GENERATE=true npx prisma generate
 
 COPY src ./src
 
 EXPOSE 3001
 
-CMD ["node", "src/app.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && node src/app.js"]
