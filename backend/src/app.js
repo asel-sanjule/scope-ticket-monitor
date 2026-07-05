@@ -6,6 +6,7 @@ import { logger } from './utils/logger.js';
 import moviesRouter from './routes/movies.js';
 import authRouter from './routes/auth.js';
 import telegramRouter from './routes/telegram.js';
+import watchlistRouter from './routes/watchlist.js';
 import { startScheduler } from './services/schedulerService.js';
 import { refreshMovies } from './services/movieService.js';
 
@@ -28,6 +29,7 @@ app.use(cookieParser());
 app.use('/api/movies', moviesRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/telegram', telegramRouter);
+app.use('/api/watchlist', watchlistRouter);
 
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok' }));

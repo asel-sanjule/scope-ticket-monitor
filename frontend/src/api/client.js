@@ -29,3 +29,16 @@ export function logout() {
 export function getTelegramLinkCode() {
   return api.get('/telegram/link-code').then((res) => res.data);
 }
+
+// Watchlist API calls
+export function getWatchlist() {
+  return api.get('/watchlist').then((res) => res.data);
+}
+
+export function addToWatchlist(movieId) {
+  return api.post('/watchlist', { movieId }).then((res) => res.data);
+}
+
+export function removeFromWatchlist(movieId) {
+  return api.delete(`/watchlist/${movieId}`).then((res) => res.data);
+}

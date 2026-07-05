@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useMovies } from '../hooks/useMovies';
 import { useAuth } from '../hooks/useAuth';
+import { useWatchlist } from '../hooks/useWatchlist';
 import { MovieCard } from '../components/MovieCard';
 import { SearchBar } from '../components/SearchBar';
 import { LoginModal } from '../components/LoginModal';
@@ -9,14 +10,20 @@ import { TelegramConnect } from '../components/TelegramConnect';
 export function Dashboard() {
   const { movies, loading, refreshing, error, triggerRefresh } = useMovies();
   const { user, isLoggedIn, sendMagicLink, logout, refresh } = useAuth();
+  const watchlist = useWatchlist(isLoggedIn);
   const [showLogin, setShowLogin] = useState(false);
   const [search, setSearch] = useState('');
-  const [filter, setFilter] = useState('all'); // 'all' | 'available' | 'unavailable'
+  const [filter, setFilter] = useState('all'); // 'all' | 'available' | 'unavailable' | 'watchlist'
 
-  const filtered = movies.filter((m) => {
+  const requireLogin = () => setShowLogin(true);
+
+  const baseList = filter === 'watchlist' ? watchlist.items.map((i) => i.movie) : movies;
+
+  const filtered = baseList.filter((m) => {
     const matchesSearch = m.title.toLowerCase().includes(search.toLowerCase());
     const matchesFilter =
       filter === 'all' ||
+      filter === 'watchlist' ||
       (filter === 'available' && m.available) ||
       (filter === 'unavailable' && !m.available);
     return matchesSearch && matchesFilter;
@@ -72,11 +79,12 @@ export function Dashboard() {
         <SearchBar value={search} onChange={setSearch} />
 
         {/* Filter tabs */}
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {[
             { key: 'all', label: 'All' },
             { key: 'available', label: 'ðŸŸ¢ Available' },
             { key: 'unavailable', label: 'ðŸ”´ Not Available' },
+            ...(isLoggedIn ? [{ key: 'watchlist', label: `ðŸ”” My Watchlist (${watchlist.items.length})` }] : []),
           ].map((tab) => (
             <button
               key={tab.key}
@@ -114,7 +122,9 @@ export function Dashboard() {
 
         {!loading && filtered.length === 0 && !error && (
           <div className="text-center py-12 text-gray-400">
-            No movies found for "{search}"
+            {filter === 'watchlist'
+              ? "You're not following any movies yet. Tap ðŸ”” Notify Me on a movie that isn't available yet."
+              : `No movies found for "${search}"`}
           </div>
         )}
 
@@ -134,6 +144,12 @@ export function Dashboard() {
               movie={movie}
               onRefresh={triggerRefresh}
               refreshing={refreshing}
+              isLoggedIn={isLoggedIn}
+              watchlistItem={watchlist.byMovieId.get(movie.id)}
+              onAddWatchlist={watchlist.add}
+              onRemoveWatchlist={watchlist.remove}
+              onRequireLogin={requireLogin}
+              forceShowNotify={filter === 'watchlist'}
             />
           ))}
         </div>

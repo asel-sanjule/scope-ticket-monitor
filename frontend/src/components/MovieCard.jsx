@@ -1,7 +1,18 @@
 import { StatusBadge } from './StatusBadge';
 import { LastChecked } from './LastChecked';
+import { NotifyButton } from './NotifyButton';
 
-export function MovieCard({ movie, onRefresh, refreshing }) {
+export function MovieCard({
+  movie,
+  onRefresh,
+  refreshing,
+  isLoggedIn,
+  watchlistItem,
+  onAddWatchlist,
+  onRemoveWatchlist,
+  onRequireLogin,
+  forceShowNotify = false,
+}) {
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex gap-4">
       {/* Poster */}
@@ -36,7 +47,7 @@ export function MovieCard({ movie, onRefresh, refreshing }) {
         </div>
 
         {/* Actions */}
-        <div className="flex gap-2 mt-auto pt-1">
+        <div className="flex flex-wrap gap-2 mt-auto pt-1">
           <button
             onClick={onRefresh}
             disabled={refreshing}
@@ -56,6 +67,17 @@ export function MovieCard({ movie, onRefresh, refreshing }) {
           >
             View →
           </a>
+
+          {(forceShowNotify || !movie.available) && (
+            <NotifyButton
+              movieId={movie.id}
+              isLoggedIn={isLoggedIn}
+              watchlistItem={watchlistItem}
+              onAdd={onAddWatchlist}
+              onRemove={onRemoveWatchlist}
+              onRequireLogin={onRequireLogin}
+            />
+          )}
         </div>
       </div>
     </div>
