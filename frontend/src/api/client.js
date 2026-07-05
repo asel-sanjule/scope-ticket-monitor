@@ -24,3 +24,8 @@ export function fetchCurrentUser() {
 export function logout() {
   return api.post('/auth/logout').then((res) => res.data);
 }
+
+// Telegram API calls
+export function getTelegramLinkCode() {
+  return api.get('/telegram/link-code').then((res) => res.data);
+}

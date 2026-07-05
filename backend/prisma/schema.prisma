@@ -35,6 +35,17 @@ model User {
 
   loginTokens         MagicLoginToken[]
   watchlist           WatchlistItem[]
+  telegramLinkCodes   TelegramLinkCode[]
+}
+
+model TelegramLinkCode {
+  id        String    @id @default(uuid())
+  code      String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
 }
 
 model MagicLoginToken {

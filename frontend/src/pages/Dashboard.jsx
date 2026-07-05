@@ -4,10 +4,11 @@ import { useAuth } from '../hooks/useAuth';
 import { MovieCard } from '../components/MovieCard';
 import { SearchBar } from '../components/SearchBar';
 import { LoginModal } from '../components/LoginModal';
+import { TelegramConnect } from '../components/TelegramConnect';
 
 export function Dashboard() {
   const { movies, loading, refreshing, error, triggerRefresh } = useMovies();
-  const { user, isLoggedIn, sendMagicLink, logout } = useAuth();
+  const { user, isLoggedIn, sendMagicLink, logout, refresh } = useAuth();
   const [showLogin, setShowLogin] = useState(false);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all'); // 'all' | 'available' | 'unavailable'
@@ -63,6 +64,10 @@ export function Dashboard() {
       )}
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+        {isLoggedIn && !user.telegramLinked && (
+          <TelegramConnect onLinked={refresh} />
+        )}
+
         {/* Search */}
         <SearchBar value={search} onChange={setSearch} />
 
