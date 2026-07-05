@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { scrapeMovieListing } from '../scraper/listingScraper.js';
 import { logger } from '../utils/logger.js';
+import { notifyWatchers } from './notificationService.js';
 
 const prisma = new PrismaClient();
 
@@ -14,7 +15,10 @@ export async function refreshMovies() {
   }
 
   for (const movie of movies) {
-    await prisma.movie.upsert({
+    const existing = await prisma.movie.findUnique({ where: { movieUrl: movie.movieUrl } });
+    const becameAvailable = !!existing && !existing.available && movie.available;
+
+    const upserted = await prisma.movie.upsert({
       where: { movieUrl: movie.movieUrl },
       update: {
         title: movie.title,
@@ -27,6 +31,15 @@ export async function refreshMovies() {
         lastChecked: new Date(),
       },
     });
+
+    if (becameAvailable) {
+      logger.info({ movieId: upserted.id, title: upserted.title }, 'Movie became available — notifying watchers');
+      try {
+        await notifyWatchers(upserted);
+      } catch (err) {
+        logger.error({ err, movieId: upserted.id }, 'Failed to notify watchers for this movie');
+      }
+    }
   }
 
   logger.info(`Upserted ${movies.length} movies to database`);
