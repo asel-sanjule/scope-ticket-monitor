@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { requireAuth } from '../middleware/requireAuth.js';
 import { getOrCreateLinkCode, linkTelegramChat, sendTelegramMessage } from '../services/telegramService.js';
+import { notifyBacklogForUser } from '../services/notificationService.js';
 import { logger } from '../utils/logger.js';
 
 const router = Router();
@@ -60,6 +61,9 @@ router.post('/webhook', async (req, res) => {
           await sendTelegramMessage(
             chatId,
             "✅ You're connected! I'll message you here as soon as tickets become available for movies on your watchlist."
+          );
+          notifyBacklogForUser(result.userId).catch((err) =>
+            logger.error({ err, userId: result.userId }, 'Backlog notification check failed')
           );
         } else {
           const reasonText =
