@@ -16,4 +16,47 @@ model Movie {
   lastChecked DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  watchers    WatchlistItem[]
+}
+
+enum Channel {
+  TELEGRAM
+  WHATSAPP
+}
+
+model User {
+  id                  String    @id @default(uuid())
+  email               String    @unique
+  notificationChannel Channel   @default(TELEGRAM)
+  telegramChatId      String?   @unique
+  whatsappNumber      String?   @unique
+  createdAt           DateTime  @default(now())
+
+  loginTokens         MagicLoginToken[]
+  watchlist           WatchlistItem[]
+}
+
+model MagicLoginToken {
+  id        String    @id @default(uuid())
+  token     String    @unique
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+}
+
+// Not used until Phase 3, but created now so this is the only migration
+// auth/watchlist will ever need.
+model WatchlistItem {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id])
+  movieId    String
+  movie      Movie     @relation(fields: [movieId], references: [id])
+  notifiedAt DateTime?
+  createdAt  DateTime  @default(now())
+
+  @@unique([userId, movieId])
 }

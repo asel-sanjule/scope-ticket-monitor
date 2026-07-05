@@ -1,8 +1,10 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { logger } from './utils/logger.js';
 import moviesRouter from './routes/movies.js';
+import authRouter from './routes/auth.js';
 import { startScheduler } from './services/schedulerService.js';
 import { refreshMovies } from './services/movieService.js';
 
@@ -15,12 +17,15 @@ app.use(cors({
   origin: [
     'http://localhost:5173',
     'https://scope-ticket-monitor.up.railway.app', 
-  ]
+  ],
+  credentials: true, // required so the session cookie is sent/accepted cross-subdomain
 }));
 app.use(express.json());
+app.use(cookieParser());
 
 // Routes
 app.use('/api/movies', moviesRouter);
+app.use('/api/auth', authRouter);
 
 // Health check
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
