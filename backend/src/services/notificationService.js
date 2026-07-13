@@ -1,8 +1,6 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
 import { sendTelegramMessage } from './telegramService.js';
 import { logger } from '../utils/logger.js';
-
-const prisma = new PrismaClient();
 
 function buildMessage(movie) {
   return `ðŸŽ¬ Tickets are now available for "${movie.title}"!\n${movie.movieUrl}`;

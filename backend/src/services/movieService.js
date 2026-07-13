@@ -1,9 +1,7 @@
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '../lib/prisma.js';
 import { scrapeMovieListing } from '../scraper/listingScraper.js';
 import { logger } from '../utils/logger.js';
 import { notifyWatchers } from './notificationService.js';
-
-const prisma = new PrismaClient();
 
 export async function refreshMovies() {
   logger.info('Starting movie refresh...');

@@ -1,8 +1,6 @@
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '../lib/prisma.js';
 
 const TOKEN_TTL_MINUTES = 15;
 const SESSION_TTL_DAYS = 30;

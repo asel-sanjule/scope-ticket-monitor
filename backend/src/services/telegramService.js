@@ -71,3 +71,21 @@ export async function sendTelegramMessage(chatId, text) {
     logger.error({ status: res.status, body }, 'Telegram sendMessage failed');
   }
 }
+
+export async function getUserByChatId(chatId) {
+  return prisma.user.findUnique({ where: { telegramChatId: String(chatId) } });
+}
+
+/**
+ * Disconnects Telegram from whichever account this chat is linked to.
+ * Returns the updated user, or null if this chat wasn't linked to anyone.
+ */
+export async function unlinkChat(chatId) {
+  const user = await getUserByChatId(chatId);
+  if (!user) return null;
+
+  return prisma.user.update({
+    where: { id: user.id },
+    data: { telegramChatId: null },
+  });
+}
