@@ -10,9 +10,32 @@ services:
       - SCOPE_BASE_URL=https://www.scopecinemas.com/movies
       - SCRAPE_INTERVAL_MINUTES=10
       - PORT=3001
+      # --- Auth ---
+      - JWT_SECRET=${JWT_SECRET}
+      - BACKEND_URL=${BACKEND_URL:-http://localhost:3001}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost}
+      # --- Gmail API ---
+      - GMAIL_CLIENT_ID=${GMAIL_CLIENT_ID}
+      - GMAIL_CLIENT_SECRET=${GMAIL_CLIENT_SECRET}
+      - GMAIL_REFRESH_TOKEN=${GMAIL_REFRESH_TOKEN}
+      - GMAIL_SENDER_EMAIL=${GMAIL_SENDER_EMAIL}
+      # --- Telegram ---
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      - TELEGRAM_BOT_USERNAME=${TELEGRAM_BOT_USERNAME}
+      - TELEGRAM_WEBHOOK_SECRET=${TELEGRAM_WEBHOOK_SECRET}
+      # --- Cleanup ---
+      - CLEANUP_STALE_DAYS=${CLEANUP_STALE_DAYS:-3}
+      - CLEANUP_CRON_EXPRESSION=${CLEANUP_CRON_EXPRESSION:-0 3 * * *}
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        # Baked in at IMAGE BUILD time (Vite requirement) — must point at
+        # wherever the browser can reach the backend, not the container
+        # network. With the backend published on host port 3001 above,
+        # that's localhost:3001 from the browser's point of view.
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3001/api}
     ports:
       - "80:80"
     depends_on:

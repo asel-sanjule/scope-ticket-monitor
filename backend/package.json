@@ -7,7 +7,8 @@
     "start": "node src/app.js",
     "db:migrate": "prisma migrate dev",
     "db:studio": "prisma studio",
-    "test:scraper": "node src/scraper/test.js"
+    "test:scraper": "node src/scraper/test.js",
+    "get-gmail-token": "node scripts/get-gmail-refresh-token.js"
   },
   "dependencies": {
     "@prisma/client": "^5.22.0",
@@ -16,12 +17,12 @@
     "dotenv": "^16.6.1",
     "express": "^4.22.2",
     "express-rate-limit": "^7.5.0",
+    "googleapis": "^173.0.0",
     "jsonwebtoken": "^9.0.2",
     "node-cron": "^4.5.0",
     "pino": "^8.21.0",
     "pino-pretty": "^10.3.1",
-    "playwright": "^1.61.1",
-    "resend": "^4.0.1"
+    "playwright": "^1.61.1"
   },
   "devDependencies": {
     "prisma": "^5.22.0"

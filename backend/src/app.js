@@ -18,6 +18,7 @@ const PORT = process.env.PORT ?? 3001;
 app.use(cors({
   origin: [
     'http://localhost:5173',
+    'http://localhost', // frontend served via docker-compose (nginx on port 80)
     'https://scope-ticket-monitor.up.railway.app', 
   ],
   credentials: true, // required so the session cookie is sent/accepted cross-subdomain
