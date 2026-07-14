@@ -8,31 +8,32 @@ const DEFAULT_STALE_DAYS = 3;
  * (see movieService.refreshMovies — the upsert loop only runs over movies
  * currently on the now-showing/coming-soon pages). So if a movie hasn't
  * been "seen" in several days, it's dropped off Scope's listings — most
- * likely its run ended — and any watchlist items for it are stale.
+ * likely its run ended.
  *
- * This deletes those watchlist items outright rather than just flagging
- * them, since there's nothing left to notify about.
+ * This deletes the Movie row itself (not just its watchlist items) once
+ * it's gone stale. WatchlistItem.movieId is ON DELETE RESTRICT, so any
+ * watchlist items pointing at a stale movie are deleted first, in the same
+ * transaction, before the movie row goes.
  */
-export async function pruneStaleWatchlistItems() {
+export async function deleteStaleMovies() {
   const staleDays = Number(process.env.CLEANUP_STALE_DAYS) || DEFAULT_STALE_DAYS;
   const cutoff = new Date(Date.now() - staleDays * 24 * 60 * 60 * 1000);
 
-  const result = await prisma.watchlistItem.deleteMany({
-    where: {
-      movie: {
-        lastChecked: { lt: cutoff },
-      },
-    },
-  });
+  const staleWhere = { lastChecked: { lt: cutoff } };
 
-  if (result.count > 0) {
+  const [{ count: watchlistItemsDeleted }, { count: moviesDeleted }] = await prisma.$transaction([
+    prisma.watchlistItem.deleteMany({ where: { movie: staleWhere } }),
+    prisma.movie.deleteMany({ where: staleWhere }),
+  ]);
+
+  if (moviesDeleted > 0) {
     logger.info(
-      { count: result.count, staleDays },
-      'Pruned stale watchlist items (movie no longer appears in scrapes)'
+      { moviesDeleted, watchlistItemsDeleted, staleDays },
+      'Deleted stale movies (no longer appear in scrapes) and their watchlist items'
     );
   } else {
-    logger.info({ staleDays }, 'Watchlist cleanup ran — nothing stale to prune');
+    logger.info({ staleDays }, 'Stale movie cleanup ran — nothing stale to delete');
   }
 
-  return result.count;
+  return { moviesDeleted, watchlistItemsDeleted };
 }

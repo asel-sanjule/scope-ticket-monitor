@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import { refreshMovies } from './movieService.js';
-import { pruneStaleWatchlistItems } from './cleanupService.js';
+import { deleteStaleMovies } from './cleanupService.js';
 import { logger } from '../utils/logger.js';
 
 export function startScheduler() {
@@ -18,17 +18,19 @@ export function startScheduler() {
 
   logger.info(`Scheduler running — every ${interval} minutes`);
 
-  // Daily watchlist cleanup — runs at 3am server time by default.
+  // Daily stale-movie cleanup — runs at 3am server time by default.
+  // Deletes Movie rows (and their watchlist items) that haven't been seen
+  // in a scrape for CLEANUP_STALE_DAYS days.
   const cleanupExpression = process.env.CLEANUP_CRON_EXPRESSION ?? '0 3 * * *';
 
   cron.schedule(cleanupExpression, async () => {
-    logger.info('Scheduled watchlist cleanup triggered');
+    logger.info('Scheduled stale movie cleanup triggered');
     try {
-      await pruneStaleWatchlistItems();
+      await deleteStaleMovies();
     } catch (err) {
-      logger.error({ err }, 'Scheduled watchlist cleanup failed');
+      logger.error({ err }, 'Scheduled stale movie cleanup failed');
     }
   });
 
-  logger.info(`Watchlist cleanup scheduler running — cron "${cleanupExpression}"`);
+  logger.info(`Stale movie cleanup scheduler running — cron "${cleanupExpression}"`);
 }
