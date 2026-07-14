@@ -13,6 +13,13 @@ import { refreshMovies } from './services/movieService.js';
 const app = express();
 const PORT = process.env.PORT ?? 3001;
 
+// Railway sits behind a proxy that sets X-Forwarded-For with the real
+// client IP. Express needs to be told to trust that header, otherwise
+// express-rate-limit throws on any IP-keyed limiter (e.g. perIpPerHour)
+// instead of using it. `1` = trust the first hop (Railway's edge), which
+// is correct here since Railway is the only proxy in front of the app.
+app.set('trust proxy', 1);
+
 // Middleware
 const ALLOWED_ORIGINS = [
   'http://localhost:5173',
