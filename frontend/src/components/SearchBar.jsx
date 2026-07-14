@@ -1,9 +1,13 @@
+import { Search, X } from 'lucide-react';
+
 export function SearchBar({ value, onChange }) {
   return (
     <div className="relative">
-      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
-        🔍
-      </span>
+      <Search
+        size={18}
+        strokeWidth={2}
+        className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
+      />
       <input
         type="text"
         value={value}
@@ -19,7 +23,7 @@ export function SearchBar({ value, onChange }) {
           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400
                      hover:text-gray-600"
         >
-          ✕
+          <X size={16} strokeWidth={2} />
         </button>
       )}
     </div>

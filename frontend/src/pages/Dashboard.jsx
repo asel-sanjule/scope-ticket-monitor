@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Clapperboard, CircleCheck, CircleDot, Bell, RefreshCw } from 'lucide-react';
 import { useMovies } from '../hooks/useMovies';
 import { useAuth } from '../hooks/useAuth';
 import { useWatchlist } from '../hooks/useWatchlist';
@@ -17,7 +18,14 @@ export function Dashboard() {
 
   const requireLogin = () => setShowLogin(true);
 
-  const baseList = filter === 'watchlist' ? watchlist.items.map((i) => i.movie) : movies;
+  // Always source movie fields (status, lastChecked, etc.) from the single
+  // `movies` list so "All" and "My Watchlist" never show divergent data.
+  // `watchlist.items` is only used to determine *membership* (which movies
+  // are followed), not to supply the movie's own fields.
+  const baseList =
+    filter === 'watchlist'
+      ? movies.filter((m) => watchlist.byMovieId.has(m.id))
+      : movies;
 
   const filtered = baseList.filter((m) => {
     const matchesSearch = m.title.toLowerCase().includes(search.toLowerCase());
@@ -37,10 +45,13 @@ export function Dashboard() {
       <header className="bg-indigo-700 text-white px-6 py-5 shadow-md">
         <div className="max-w-2xl mx-auto flex items-start justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight">ðŸŽ¬ Scope Ticket Monitor</h1>
+            <h1 className="text-xl font-bold tracking-tight flex items-center gap-2">
+              <Clapperboard size={22} strokeWidth={2.25} />
+              Scope Ticket Monitor
+            </h1>
             <p className="text-indigo-300 text-sm mt-0.5">
               {loading
-                ? 'Loadingâ€¦'
+                ? 'Loading…'
                 : `${availableCount} of ${movies.length} movies have tickets available`}
             </p>
           </div>
@@ -81,20 +92,34 @@ export function Dashboard() {
         {/* Filter tabs */}
         <div className="flex flex-wrap gap-2">
           {[
-            { key: 'all', label: 'All' },
-            { key: 'available', label: 'ðŸŸ¢ Available' },
-            { key: 'unavailable', label: 'ðŸ”´ Not Available' },
-            ...(isLoggedIn ? [{ key: 'watchlist', label: `ðŸ”” My Watchlist (${watchlist.items.length})` }] : []),
+            { key: 'all', label: 'All', icon: null },
+            { key: 'available', label: 'Available', icon: CircleCheck, iconColor: 'text-emerald-500' },
+            { key: 'unavailable', label: 'Not Available', icon: CircleDot, iconColor: 'text-red-500' },
+            ...(isLoggedIn
+              ? [{
+                  key: 'watchlist',
+                  label: `My Watchlist (${watchlist.items.length})`,
+                  icon: Bell,
+                  iconColor: 'text-indigo-500',
+                }]
+              : []),
           ].map((tab) => (
             <button
               key={tab.key}
               onClick={() => setFilter(tab.key)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                 filter === tab.key
                   ? 'bg-indigo-600 text-white'
                   : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
               }`}
             >
+              {tab.icon && (
+                <tab.icon
+                  size={15}
+                  strokeWidth={2.25}
+                  className={filter === tab.key ? 'text-white' : tab.iconColor}
+                />
+              )}
               {tab.label}
             </button>
           ))}
@@ -103,17 +128,18 @@ export function Dashboard() {
           <button
             onClick={triggerRefresh}
             disabled={refreshing}
-            className="ml-auto px-3 py-1.5 rounded-lg text-sm font-medium
+            className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium
                        bg-white border border-gray-200 text-gray-600
                        hover:bg-gray-50 disabled:opacity-50 transition-colors"
           >
-            {refreshing ? 'Refreshingâ€¦' : 'â†» Refresh All'}
+            <RefreshCw size={15} strokeWidth={2.25} className={refreshing ? 'animate-spin' : ''} />
+            {refreshing ? 'Refreshing…' : 'Refresh All'}
           </button>
         </div>
 
         {/* States */}
         {loading && (
-          <div className="text-center py-12 text-gray-400">Loading moviesâ€¦</div>
+          <div className="text-center py-12 text-gray-400">Loading movies…</div>
         )}
 
         {error && (
@@ -122,9 +148,15 @@ export function Dashboard() {
 
         {!loading && filtered.length === 0 && !error && (
           <div className="text-center py-12 text-gray-400">
-            {filter === 'watchlist'
-              ? "You're not following any movies yet. Tap ðŸ”” Notify Me on a movie that isn't available yet."
-              : `No movies found for "${search}"`}
+            {filter === 'watchlist' ? (
+              <span className="inline-flex items-center gap-1.5">
+                You're not following any movies yet. Tap
+                <Bell size={14} strokeWidth={2.25} className="inline text-gray-400" />
+                Notify Me on a movie that isn't available yet.
+              </span>
+            ) : (
+              `No movies found for "${search}"`
+            )}
           </div>
         )}
 
@@ -132,7 +164,7 @@ export function Dashboard() {
         {refreshing && (
           <div className="bg-indigo-50 border border-indigo-200 text-indigo-700
                           rounded-xl px-4 py-3 text-sm text-center">
-            Refreshing in background â€” this takes about 30 secondsâ€¦
+            Refreshing in background — this takes about 30 seconds…
           </div>
         )}
 
