@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { Clapperboard } from 'lucide-react';
 import { StatusBadge } from './StatusBadge';
 import { LastChecked } from './LastChecked';
 import { NotifyButton } from './NotifyButton';
@@ -13,18 +15,33 @@ export function MovieCard({
   onRequireLogin,
   forceShowNotify = false,
 }) {
+  // Tracks whether the poster URL is missing or failed to load, so we can
+  // show a clean placeholder instead of a broken-image icon. Posters can be
+  // legitimately missing right after a scrape hasn't finished resolving a
+  // lazy-loaded image yet (see listingScraper.js), so this is expected to
+  // happen occasionally rather than indicating a bug every time.
+  const [posterFailed, setPosterFailed] = useState(false);
+  const showPlaceholder = !movie.poster || posterFailed;
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex gap-4">
       {/* Poster */}
-      <img
-        src={movie.poster}
-        alt={movie.title}
-        className="w-20 h-28 object-cover rounded-lg flex-shrink-0 bg-gray-100"
-        onError={(e) => {
-          e.target.src = '/placeholder-poster.png';
-          e.target.onerror = null;
-        }}
-      />
+      {showPlaceholder ? (
+        <div
+          className="w-20 h-28 rounded-lg flex-shrink-0 bg-gray-100
+                     flex items-center justify-center"
+          title="Poster not available yet"
+        >
+          <Clapperboard size={24} strokeWidth={1.75} className="text-gray-300" />
+        </div>
+      ) : (
+        <img
+          src={movie.poster}
+          alt={movie.title}
+          className="w-20 h-28 object-cover rounded-lg flex-shrink-0 bg-gray-100"
+          onError={() => setPosterFailed(true)}
+        />
+      )}
 
       {/* Info */}
       <div className="flex flex-col gap-2 flex-1 min-w-0">
