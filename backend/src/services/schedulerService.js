@@ -1,6 +1,6 @@
 import cron from 'node-cron';
 import { refreshMovies } from './movieService.js';
-import { pruneStaleWatchlistItems } from './cleanupService.js';
+import { deleteStaleMovies } from './cleanupService.js';
 import { sendTelegramMessage } from './telegramService.js';
 import { logger } from '../utils/logger.js';
 
@@ -97,7 +97,7 @@ export function startScheduler() {
   cron.schedule(cleanupExpression, async () => {
     logger.info('Scheduled watchlist cleanup triggered');
     try {
-      await pruneStaleWatchlistItems();
+      await deleteStaleMovies();
     } catch (err) {
       logger.error({ err }, 'Scheduled watchlist cleanup failed');
     }
